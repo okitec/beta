@@ -1,3 +1,21 @@
+/*
+Package beta implements TypeGreek-flavoured Betacode parsing.
+
+TypeGreek (www.typegreek.com) is a JavaScript implementation of Betacode that
+relaxes some rules to ease text entry (and implementation).
+This implementation is independent, but follows the same rules:
+
+ - Uppercase Betacode characters form uppercase Greek characters, unlike Vanilla Betacode
+   that is case-insensitive and uses asterisks to indicate uppercase (*A, *B).
+
+ - The order of diacritics is unimportant.
+
+ - The diacritics always follow the base character, unlike Vanilla Betacode, where the
+   breathing was between the asterisk and the letter for uppercase characters, for example.
+
+ - Whether a sigma is final or not depends on the next character in streaming mode (beta.Writer).
+   When using beta.Sym, we can't know the next character, so this is moot.
+*/
 package beta
 
 import (
@@ -40,6 +58,7 @@ func vowel(r rune) bool {
 	return strings.ContainsRune(Vowels, unicode.ToLower(r))
 }
 
+// Reset clears the Sym so that it can be re-used.
 func (sym *Sym) Reset() {
 	sym.Base = 0
 	sym.Accent = accNone
@@ -49,6 +68,9 @@ func (sym *Sym) Reset() {
 	sym.err = nil
 }
 
+// Add adds r to the symbol if it is a valid Betacode/TypeGreek base character or modifier.
+// It returns true if the character has been added. If it returns false and if sym.Err() is nil,
+// the start of a new symbol was detected. If sym.Err() is not nil, a true error occurred.
 func (sym *Sym) Add(r rune) bool {
 	switch {
 	case r >= 'A' && r <= 'Z':
