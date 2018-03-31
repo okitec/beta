@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/okitec/beta"
 )
@@ -19,7 +20,16 @@ func main() {
 		sym.Reset()
 
 		for _, r := range s {
-retry:
+			if strings.ContainsRune(",.:;", r) {
+				if !sym.Empty() {
+					fmt.Print(sym.PrecombinedString())
+					sym.Reset()
+				}
+				fmt.Print(string(r))
+				continue
+			}
+
+		retry:
 			ok := sym.Add(r)
 
 			// We read a rune from the next symbol, reset and add again.
@@ -28,7 +38,7 @@ retry:
 				sym.Reset()
 				goto retry
 			} else if !ok && sym.Err() != nil {
-				fmt.Fprintln(os.Stderr, "Error: ", sym.Err())
+				//fmt.Fprintln(os.Stderr, "Error: ", sym.Err())
 			}
 		}
 
