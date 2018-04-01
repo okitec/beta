@@ -1,20 +1,23 @@
 /*
-Package beta implements TypeGreek-flavoured Betacode parsing.
+Package beta implements TypeGreek-flavoured and Standard Betacode parsing.
 
 TypeGreek (www.typegreek.com) is a JavaScript implementation of Betacode that
 relaxes some rules to ease text entry (and implementation).
-This implementation is independent, but follows the same rules:
+This implementation is independent, but allows the same:
 
- - Uppercase Betacode characters form uppercase Greek characters, unlike Vanilla Betacode
-   that is case-insensitive and uses asterisks to indicate uppercase (*A, *B).
+ - Uppercase Betacode characters form uppercase Greek characters.
 
  - The order of diacritics is unimportant.
 
- - The diacritics always follow the base character, unlike Vanilla Betacode, where the
-   breathing was between the asterisk and the letter for uppercase characters, for example.
+ - The diacritics follow the base character.
 
- - Whether a sigma is final or not depends on the next character in streaming mode (beta.Writer).
-   When using beta.Sym, we can't know the next character, so this is moot.
+ - Whether a sigma is final or not depends on the next character in streaming
+   mode (beta.Writer). When using beta.Sym, we can't know the next character,
+   so this is moot.
+
+When an asterisk is encountered, the symbol is coerced to uppercase and
+breathing and accent may appear before the base character, emulating Standard
+Betacode as used by the Perseus Project.
 */
 package beta
 
