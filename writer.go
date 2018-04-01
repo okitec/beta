@@ -8,7 +8,7 @@ import (
 
 // Ignored is the default value for Writer.Ignored. The question mark is not used in
 // proper Greek, but is included here anyway. We trust the user.
-const Ignored = ",.;:·?-–—[1234567890!] \t\n"
+const Ignored = ",.';:·?-–—[1234567890!] \t\n"
 
 // Writer converts Betacode to UTF-8 Greek.
 type Writer struct {
