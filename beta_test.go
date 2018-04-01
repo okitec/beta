@@ -14,4 +14,16 @@ func TestBeta(t *testing.T) {
 	if s != "a)=|" {
 		t.Error("expected 'a)=|', got '", s, "'")
 	}
+
+	// Standard Betacode compatibility
+	sym.Reset()
+	sym.Add('*')
+	sym.Add(')')
+	sym.Add('=')
+	sym.Add('a')
+
+	s = sym.String()
+	if s != "A)=" {
+		t.Error("expected 'A)=', got '", s, "'")
+	}
 }

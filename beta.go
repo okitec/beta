@@ -26,9 +26,6 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-const accNone = 0
-const spiNone = 0
-
 // A Sym is a parsed Betacode character.
 type Sym struct {
 	Base     rune // Betacode character (A-Z, a-z)
@@ -36,6 +33,14 @@ type Sym struct {
 	Spiritus rune // Breathing: none, ), (
 	Iota     bool // Iota subscriptum/adscriptum
 	Trema    bool // Diaeresis
+
+	// Standard Betacode compatibility:
+	// If true, an asterisk was read. Accent and spiritus can be applied
+	// and an error only happens if an invalid base character is added.
+	// When the base character is added, it is simply converted to uppercase.
+	//
+	// This field is cleared when the base character is encountered.
+	ast bool
 
 	err error
 }
@@ -49,13 +54,46 @@ func vowel(r rune) bool {
 	return strings.ContainsRune(Vowels, unicode.ToLower(r))
 }
 
+func validAccent(r rune) error {
+	if !vowel(r) {
+		return errors.New("can't put accent on non-vowels")
+	}
+
+	return nil
+}
+
+func validBreathing(r rune) error {
+	if !vowel(r) && r != 'R' && r != 'r' {
+		return errors.New("can't put breathing on non-vowel non-rho")
+	}
+
+	return nil
+}
+
+func validIota(r rune) error {
+	if !vowel(r) {
+		return errors.New("can't put iota subscriptum on non-vowels")
+	}
+
+	return nil
+}
+
+func validTrema(r rune) error {
+	if !vowel(r) {
+		return errors.New("can't put trema on non-vowels")
+	}
+
+	return nil
+}
+
 // Reset clears the Sym so that it can be re-used.
 func (sym *Sym) Reset() {
 	sym.Base = 0
-	sym.Accent = accNone
-	sym.Spiritus = spiNone
+	sym.Accent = 0
+	sym.Spiritus = 0
 	sym.Iota = false
 	sym.Trema = false
+	sym.ast = false
 	sym.err = nil
 }
 
@@ -65,39 +103,84 @@ func (sym *Sym) Reset() {
 func (sym *Sym) Add(r rune) bool {
 	switch {
 	case r >= 'A' && r <= 'Z':
-		if !sym.Empty() {
+		if !sym.ast && !sym.Empty() {
 			return false
 		}
+
+		sym.ast = false
+
+		// Is uppercase anyway, so the asterisk does nothing to the case.
 		sym.Base = r
+
 	case r >= 'a' && r <= 'z':
-		if !sym.Empty() {
+		if !sym.ast && !sym.Empty() {
 			return false
 		}
-		sym.Base = r
+
+		// Is lowercase, so an eventual asterisk must be applied.
+		// Also checks whether the breathing and accent are valid
+		// if they are present.
+		if !sym.ast {
+			sym.Base = r
+		} else {
+			sym.ast = false
+
+			if sym.Accent != 0 {
+				sym.err = validAccent(r)
+				if sym.err != nil {
+					return false
+				}
+			}
+
+			if sym.Spiritus != 0 {
+				sym.err = validBreathing(r)
+				if sym.err != nil {
+					return false
+				}
+			}
+
+			sym.Base = unicode.ToUpper(r)
+		}
+
 	case r == '/' || r == '\\' || r == '=':
-		if !vowel(sym.Base) {
-			sym.err = errors.New("can't put accent on non-vowels")
-			return false
+		// Don't check the base character if there was an asterisk.
+		// The base character is yet to come in this Standard Betacode.
+		if !sym.ast {
+			sym.err = validAccent(sym.Base)
+			if sym.err != nil {
+				return false
+			}
 		}
 		sym.Accent = r
+
 	case r == '(' || r == ')':
-		if !vowel(sym.Base) && sym.Base != 'R' && sym.Base != 'r' {
-			sym.err = errors.New("can't put breathing on non-vowel non-rho")
-			return false
+		if !sym.ast {
+			sym.err = validBreathing(sym.Base)
+			if sym.err != nil {
+				return false
+			}
 		}
 		sym.Spiritus = r
+
 	case r == '|':
-		if !vowel(sym.Base) {
-			sym.err = errors.New("can't put Iota subscriptum on non-vowels")
+		sym.err = validIota(sym.Base)
+		if sym.err != nil {
 			return false
 		}
 		sym.Iota = true
+
 	case r == '+':
-		if !vowel(sym.Base) {
-			sym.err = errors.New("can't put Trema on non-vowels")
+		sym.err = validTrema(sym.Base)
+		if sym.err != nil {
 			return false
 		}
 		sym.Trema = true
+
+	case r == '*':
+		if sym.Base != 0 {
+			sym.err = errors.New("asterisk not at start of word")
+		}
+		sym.ast = true
 
 	default:
 		sym.err = errors.New("unknown betacode symbol")
@@ -111,10 +194,10 @@ func (sym *Sym) Add(r rune) bool {
 func (sym Sym) String() string {
 	s := string(sym.Base)
 
-	if sym.Spiritus != spiNone {
+	if sym.Spiritus != 0 {
 		s += string(sym.Spiritus)
 	}
-	if sym.Accent != accNone {
+	if sym.Accent != 0 {
 		s += string(sym.Accent)
 	}
 	if sym.Iota {
@@ -127,9 +210,9 @@ func (sym Sym) String() string {
 	return s
 }
 
-// Empty returns true if the symbol is empty, i.e. has no base character.
+// Empty returns true if the symbol is empty, i.e. diacritics can't be applied.
 func (sym Sym) Empty() bool {
-	return sym.Base == 0
+	return sym.Base == 0 && !sym.ast
 }
 
 // Err returns the error that caused Add to return false. If !sym.Empty() and sym.Err() == nil,
@@ -167,10 +250,10 @@ func (sym Sym) CombiningString() string {
 		s += string(code[sym.Base])
 	}
 
-	if sym.Spiritus != spiNone {
+	if sym.Spiritus != 0 {
 		s += string(code[sym.Spiritus])
 	}
-	if sym.Accent != accNone {
+	if sym.Accent != 0 {
 		s += string(code[sym.Accent])
 	}
 	if sym.Iota {
