@@ -8,7 +8,7 @@ import (
 
 // Ignored is the default value for Writer.Ignored. The question mark is not used in
 // proper Greek, but is included here anyway. We trust the user.
-const Ignored = ",.;:·? \t\n"
+const Ignored = ",.;:·?-–— \t\n"
 
 // Writer converts Betacode to UTF-8 Greek.
 type Writer struct {
@@ -105,4 +105,3 @@ func (w *Writer) Write(p []byte) (n int, err error) {
 func (w *Writer) Flush() error {
 	return w.w.Flush()
 }
-

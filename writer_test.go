@@ -7,12 +7,16 @@ import (
 )
 
 func TestWriter(t *testing.T) {
+	const ref = `Μῆνιν ἄειδε, θεά, Πηληϊάδεω Ἀχιλῆος `
+
 	var buf bytes.Buffer
 	w := NewWriter(&buf)
 
-	fmt.Fprint(w, "mh=nin a)ei/de, qea/, Phlhi+a/dew A)xillh=os ")
+	fmt.Fprint(w, "Mh=nin a)/eide, qea/, Phlhi+a/dew A)xillh=os ")
 	w.Flush()
-	if buf.String() != "μῆνιν ἀείδε, θεά, Πηληϊάδεω Ἀχιλλῆος " {
-		t.Error("expected 'μῆνιν ἀείδε, θεά, Πηληϊάδεω Ἀχιλλῆος ', got '" + buf.String() + "'")
+
+	// XXX Why does this always fail? They look the same. Is the Unicode normalisation not done correctly?
+	if buf.String() != ref {
+		t.Error("expected '" + ref + "', got '" + buf.String() + "'")
 	}
 }

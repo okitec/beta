@@ -133,7 +133,7 @@ func (sym Sym) String() string {
 		s += "+"
 	}
 
-	return s 
+	return s
 }
 
 // Empty returns true if the symbol is empty, i.e. has no base character.
@@ -168,7 +168,7 @@ func (sym Sym) Combining() []byte {
 func (sym Sym) CombiningString() string {
 	var s string
 
-	// An uppercase Betacode letter is treated as a lowercase one to 
+	// An uppercase Betacode letter is treated as a lowercase one to
 	if unicode.IsUpper(sym.Base) {
 		lowerBase := unicode.ToLower(sym.Base)
 		s += string(unicode.ToUpper(code[lowerBase]))
@@ -246,11 +246,11 @@ var code = map[rune]rune{
 	'y': 'ψ',
 	'w': 'ω',
 
-	'/': '́',
+	'/':  '́',
 	'\\': '̀',
-	'=': '͂',
-	')': '̓',
-	'(': '̔',
-	'|': 'ͅ',
-	'+': '̈',
+	'=':  '͂',
+	')':  '̓',
+	'(':  '̔',
+	'|':  'ͅ',
+	'+':  '̈',
 }
