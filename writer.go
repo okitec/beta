@@ -36,15 +36,15 @@ func (w *Writer) Write(p []byte) (n int, err error) {
 
 	// Output sym and reset it.
 	wsym := func() error {
-		var s string
+		var t string
 
 		if w.Combining {
-			s = sym.CombiningString()
+			t = sym.CombiningString()
 		} else {
-			s = sym.PrecombinedString()
+			t = sym.PrecombinedString()
 		}
 
-		n, err := w.w.WriteString(s)
+		n, err := w.w.WriteString(t)
 		total += n
 		if err != nil {
 			return err
