@@ -1,3 +1,4 @@
+// Command beta reads Betacode lines and spews out precombined Greek.
 package main
 
 import (

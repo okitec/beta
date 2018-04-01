@@ -26,18 +26,8 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-const (
-	accNone       = 0
-	accAcute      = '/'
-	accGrave      = '\\'
-	accCircumflex = '='
-)
-
-const (
-	spiNone  = 0
-	spiLenis = ')'
-	spiAsper = '('
-)
+const accNone = 0
+const spiNone = 0
 
 // A Sym is a parsed Betacode character.
 type Sym struct {
@@ -51,6 +41,7 @@ type Sym struct {
 }
 
 const (
+	// Vowels in Betacode. Most diacritics apply to vowels only.
 	Vowels = "aehowiu"
 )
 
@@ -159,7 +150,7 @@ func (sym Sym) PrecombinedString() string {
 	return string(sym.Precombined())
 }
 
-// CombiningString returns the combining diacritics Unicode form as a UTF-8 byte slice.
+// Combining returns the combining diacritics Unicode form as a UTF-8 byte slice.
 func (sym Sym) Combining() []byte {
 	return []byte(sym.CombiningString())
 }
