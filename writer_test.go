@@ -12,7 +12,7 @@ func TestWriter(t *testing.T) {
 	var buf bytes.Buffer
 	w := NewWriter(&buf)
 
-	fmt.Fprint(w, "Mh=nin a)/eide, qea/, Phlhi+a/dew A)xillh=os ")
+	fmt.Fprint(w, "Mh=nin a)/eide, qea/, Phlhi+a/dew A)xilh=os ")
 	w.Flush()
 
 	// XXX Why does this always fail? They look the same. Is the Unicode normalisation not done correctly?
