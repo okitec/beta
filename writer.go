@@ -6,24 +6,20 @@ import (
 	"strings"
 )
 
-// Ignored is the default value for Writer.Ignored. The question mark is not used in
-// proper Greek, but is included here anyway. We trust the user.
-const Ignored = ",.';:·?-–—[1234567890!] \t\n"
+
+// Valid Betacode characters in string form.
+const validCodes = `ABGDEVZHQIKLMNCOPRJSTUFXYWabgdevzhqiklmncoprjstufxyw/\=)(|+*`
 
 // Writer converts Betacode to UTF-8 Greek.
 type Writer struct {
 	// Precombined UTF-8 (NFC) if false, combining diacritics otherwise.
 	Combining bool
 
-	// Characters that are passed through to the underlying writer unparsed.
-	// They are all treated as word-delimiters with regards to final-sigma detection.
-	Ignored string
-
 	w *bufio.Writer
 }
 
 func NewWriter(w io.Writer) *Writer {
-	return &Writer{Ignored: Ignored, w: bufio.NewWriter(w)}
+	return &Writer{w: bufio.NewWriter(w)}
 }
 
 // Write converts Betacode in p to Greek. The last symbol must be complete: this Writer
@@ -56,7 +52,7 @@ func (w *Writer) Write(p []byte) (n int, err error) {
 
 	for _, r := range s {
 		// End of word detected
-		if strings.ContainsRune(w.Ignored, r) {
+		if !strings.ContainsRune(validCodes, r) {
 			// Set sigma to final variant.
 			if sym.Base == 's' {
 				sym.Base = 'j'
@@ -68,7 +64,7 @@ func (w *Writer) Write(p []byte) (n int, err error) {
 				return total, err
 			}
 
-			// Output the ignored-rune.
+			// Output the non-code rune.
 			n, err := w.w.WriteRune(r)
 			total += n
 			if err != nil {
@@ -87,7 +83,7 @@ func (w *Writer) Write(p []byte) (n int, err error) {
 				return total, err
 			}
 
-			// We read the base rune of the next symbol. Output the current symbol,
+			// We encountered the base rune of the next symbol. Output the current symbol,
 			// reset sym, and add the base for the next sym.
 			err := wsym()
 			if err != nil {
