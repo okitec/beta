@@ -1,13 +1,13 @@
-Beta – Betacode converter
+Beta - Betacode converter
 =========================
 
-**Version 0.2: Incomplete and subject to change**
+**Version 0.3: Might change, but is usable just fine**
 
 Beta is a library for converting [TypeGreek](http://www.typegreek.com)-flavoured Betacode to polytonic Greek.
 It can generate UTF-8 text with precomposed characters (NFC) or combining diacritics (NFD). Read this
 [Go blog entry][norm] for more information about text normalisation.
 
-This implementation is independent from TypeGreek, but implements the same rules: diacritics can appear in any
+This implementation is independent of TypeGreek, but implements the same rules: diacritics can appear in any
 order after the base character, capital Betacode letters form capital Greek letters (no asterisk), and a sigma
 followed by whitespace or punctuation becomes a terminal sigma automatically.
 
